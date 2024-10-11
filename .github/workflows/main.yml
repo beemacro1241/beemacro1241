@@ -1,0 +1,43 @@
+import pyautogui
+import time
+import requests
+from pynput import keyboard
+
+# Webhook URL (replace with your own)
+webhook_url = 'https://your-webhook-url'
+
+# List of fields to check
+fields = ['pepper_field.png', 'mountain_top.png', 'rose_field.png', 'cactus_field.png', 'spider_field.png']
+
+# Function to send a webhook notification
+def send_webhook_notification():
+    data = {
+        "content": "Vicious Bee detected!"
+    }
+    requests.post(webhook_url, json=data)
+
+# Function to collect stingers
+def collect_stingers():
+    while True:
+        for field in fields:
+            if pyautogui.locateOnScreen(field, confidence=0.8):
+                pyautogui.click(pyautogui.locateCenterOnScreen(field, confidence=0.8))
+                send_webhook_notification()
+                time.sleep(10)  # Wait for 10 seconds before checking the next field
+        time.sleep(1800)  # Wait for 1800 seconds (30 minutes)
+
+# Function to start/stop the macro
+def on_press(key):
+    if key == keyboard.Key.f12:
+        if not collect_stingers.is_running:
+            collect_stingers.is_running = True
+            collect_stingers()
+        else:
+            collect_stingers.is_running = False
+
+# Set the initial state
+collect_stingers.is_running = False
+
+# Listen for the F12 key to start/stop the macro
+with keyboard.Listener(on_press=on_press) as listener:
+    listener.join()
